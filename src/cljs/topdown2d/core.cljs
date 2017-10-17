@@ -1,5 +1,9 @@
 (ns topdown2d.core
-  (:require [topdown2d.demoscene]))
+  (:require
+    [topdown2d.demoscene :as demoscene]
+    [topdown2d.input :as input]))
+
+(enable-console-print!)
 
 (def gamestate {
   :canvas (.getElementById js/document "gamecanvas")
@@ -9,36 +13,19 @@
     :now 0
     :fps 0
   }
+  :keys []
   :scene :demo
   :scenes {
     :demo {
-      :update topdown2d.demoscene/update
-      :draw topdown2d.demoscene/draw
+      :update demoscene/update
+      :draw demoscene/draw
+      :init demoscene/init
       :data {}
     }
   }
 })
 
 (aset (:2d gamestate) "font" "10px monospace")
-
-(def keysdown (atom []))
-
-(defn keydown? [keycode]
-  (some #{keycode} @keysdown))
-
-(.addEventListener js/document
-  "keydown"
-  (fn [event]
-    (let [code (symbol (.-code event))]
-      (swap! keysdown #(set (conj %1 code))))))
-
-(.addEventListener js/document
-  "keyup"
-  (fn [event]
-    (let [code (symbol (.-code event))]
-      (swap! keysdown
-        (fn [coll]
-          (remove #(= % code) coll))))))
 
 (defn set-timing [state timingkey]
   (update-in state
@@ -71,7 +58,11 @@
   (.fillText
     (:2d gamestate)
     (int (get-in gamestate [:timing :fps]))
-    0 10))
+    0 10)
+  (let [scenekey (:scene gamestate)
+        scene (scenekey (:scenes gamestate))
+        drawfunc (:draw scene)]
+    (drawfunc gamestate scene)))
 
 (defn mainloop [gamestate]
   (let [newstate (update-step gamestate)]
@@ -82,4 +73,17 @@
           #(mainloop newstate)))
       (/ 1000 30))))
 
-(mainloop gamestate)
+(defn init-scenes []
+  (assoc
+    gamestate
+    :scenes
+    (reduce
+      (fn [scenes [scenekey scenedata]]
+        (let [initfunc (:init scenedata)
+              newdata (initfunc gamestate scenedata)]
+          (assoc scenes
+            scenekey newdata)))
+      {}
+      (:scenes gamestate))))
+
+(mainloop (init-scenes))
