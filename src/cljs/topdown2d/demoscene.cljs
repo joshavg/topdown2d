@@ -23,6 +23,9 @@
         :h 10
         :v 5
         :d :?
+        :keep-in (assoc (:dimensions gamestate)
+          :x 0
+          :y 0)
       }
     }))
 

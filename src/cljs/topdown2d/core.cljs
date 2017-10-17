@@ -13,7 +13,10 @@
     :now 0
     :fps 0
   }
-  :keys []
+  :dimensions {
+    :w 600
+    :h 400
+  }
   :scene :demo
   :scenes {
     :demo {
@@ -54,7 +57,10 @@
     (update-scene)))
 
 (defn draw-step [gamestate]
-  (.clearRect (:2d gamestate) 0 0 400 600)
+  (.clearRect (:2d gamestate)
+    0 0
+    (get-in gamestate [:dimensions :w])
+    (get-in gamestate [:dimensions :h]))
   (.fillText
     (:2d gamestate)
     (int (get-in gamestate [:timing :fps]))
