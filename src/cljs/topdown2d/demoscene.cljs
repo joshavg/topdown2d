@@ -13,7 +13,6 @@
         :y 50
         :w 10
         :h 10
-        :v 0
       }
       :box
       {
@@ -21,7 +20,7 @@
         :y 5
         :w 10
         :h 10
-        :v 5
+        :pps 100
         :d :?
       }
     }))
@@ -30,9 +29,11 @@
   (let [box (get-in scenedata [:data :box])
         dir (input/dirinput)
         box (assoc box :d dir)]
-    (update-in scenedata
+    (assoc-in scenedata
       [:data :box]
-      #(objects/move-inside-gamestate gamestate box))))
+      (objects/move-inside-gamestate
+        gamestate
+        box))))
 
 (defn draw [gamestate scenedata]
   (let [{{:keys [bumper box]} :data} scenedata

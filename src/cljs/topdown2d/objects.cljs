@@ -9,21 +9,21 @@
       (< (+ x w) (+ cx cw))
       (< (+ y h) (+ cy ch)))))
 
-(defn moved-object [obj]
-  (let [{:keys [x y v d]} obj]
+(defn moved-object [obj pxs]
+  (let [{:keys [x y d]} obj]
     (cond
       (= d :w)
         (assoc obj
-          :x (- x v))
+          :x (- x pxs))
       (= d :e)
         (assoc obj
-          :x (+ x v))
+          :x (+ x pxs))
       (= d :n)
         (assoc obj
-          :y (- y v))
+          :y (- y pxs))
       (= d :s)
         (assoc obj
-          :y (+ y v))
+          :y (+ y pxs))
       :else obj)))
 
 (defn bump-in-wall [obj container]
@@ -36,14 +36,23 @@
       :s (update obj :y #(- (+ cy ch) h 1))
       :? obj)))
 
-(defn move-inside [obj container]
-  (let [moved (moved-object obj)]
+(defn pps->px [gamestate obj]
+  (let [prev (get-in gamestate [:timing :prev])
+        now (get-in gamestate [:timing :now])
+        secs (/ (- now prev) 1000)
+        pps (:pps obj)]
+    (* pps secs)))
+
+(defn move-inside [obj container pxs]
+  (let [moved (moved-object obj pxs)]
     (if (in? moved container)
       moved
       (bump-in-wall obj container))))
 
 (defn move-inside-gamestate [gamestate obj]
-  (let [container (assoc (:dimensions gamestate)
+  (let [pxs (pps->px gamestate obj)
+        container (assoc
+                    (:dimensions gamestate)
                     :x 0
                     :y 0)]
-    (move-inside obj container)))
+    (move-inside obj container pxs)))
