@@ -1,32 +1,49 @@
 (ns topdown2d.objects)
 
-(defn in? [obj box]
+(defn in? [obj container]
   (let [{:keys [x y w h]} obj
-        {bx :x by :y bw :w bh :h} box]
-    (println obj x)
+        {cx :x cy :y cw :w ch :h} container]
     (and
-      (> x bx)
-      (> y by)
-      (< (+ x w) (+ bx bw))
-      (< (+ y h) (+ by bh)))))
+      (> x cx)
+      (> y cy)
+      (< (+ x w) (+ cx cw))
+      (< (+ y h) (+ cy ch)))))
 
-(defn move [obj]
-  (let [{:keys [x y v d]} obj
-        moved (cond
-                (= d :w)
-                  (assoc obj
-                    :x (- x v))
-                (= d :e)
-                  (assoc obj
-                    :x (+ x v))
-                (= d :n)
-                  (assoc obj
-                    :y (- y v))
-                (= d :s)
-                  (assoc obj
-                    :y (+ y v))
-                :else obj)
-        keep-in (:keep-in obj)]
-    (if (or (nil? keep-in) (and keep-in (in? moved keep-in)))
+(defn moved-object [obj]
+  (let [{:keys [x y v d]} obj]
+    (cond
+      (= d :w)
+        (assoc obj
+          :x (- x v))
+      (= d :e)
+        (assoc obj
+          :x (+ x v))
+      (= d :n)
+        (assoc obj
+          :y (- y v))
+      (= d :s)
+        (assoc obj
+          :y (+ y v))
+      :else obj)))
+
+(defn bump-in-wall [obj container]
+  (let [{:keys [x y w h d]} obj
+        {cx :x cy :y cw :w ch :h} container]
+    (case d
+      :w (assoc obj :x (inc cx))
+      :e (update obj :x #(- (+ cx cw) w 1))
+      :n (assoc obj :y (inc cy))
+      :s (update obj :y #(- (+ cy ch) h 1))
+      :? obj)))
+
+(defn move-inside [obj container]
+  (let [moved (moved-object obj)]
+    (if (in? moved container)
       moved
-      obj)))
+      (bump-in-wall obj container))))
+
+(defn move-inside-gamestate [gamestate obj]
+  (let [container (assoc (:dimensions gamestate)
+                    :x 0
+                    :y 0)]
+    (move-inside obj container)))

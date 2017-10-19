@@ -23,9 +23,6 @@
         :h 10
         :v 5
         :d :?
-        :keep-in (assoc (:dimensions gamestate)
-          :x 0
-          :y 0)
       }
     }))
 
@@ -35,7 +32,7 @@
         box (assoc box :d dir)]
     (update-in scenedata
       [:data :box]
-      #(objects/move box))))
+      #(objects/move-inside-gamestate gamestate box))))
 
 (defn draw [gamestate scenedata]
   (let [{{:keys [bumper box]} :data} scenedata
