@@ -22,8 +22,8 @@
   :scene :demo
   :scenes {
     :demo {
-      :update demoscene/update
-      :draw demoscene/draw
+      :update demoscene/update-scene
+      :draw demoscene/draw-scene
       :init demoscene/init
       :data {}
     }

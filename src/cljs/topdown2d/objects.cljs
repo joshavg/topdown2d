@@ -28,20 +28,16 @@
 
 (defn moved-object [obj pxs]
   (let [{:keys [x y d]} obj]
-    (cond
-      (= d :w)
-        (assoc obj
-          :x (- x pxs))
-      (= d :e)
-        (assoc obj
-          :x (+ x pxs))
-      (= d :n)
-        (assoc obj
-          :y (- y pxs))
-      (= d :s)
-        (assoc obj
-          :y (+ y pxs))
-      :else obj)))
+    (case d
+      :w (assoc obj
+           :x (- x pxs))
+      :e (assoc obj
+           :x (+ x pxs))
+      :n (assoc obj
+           :y (- y pxs))
+      :s (assoc obj
+           :y (+ y pxs))
+      obj)))
 
 (defn bump-into [obj obj2]
   (let [{:keys [x y w h d]} obj
@@ -61,7 +57,7 @@
       :e (assoc obj :x (- (+ cx cw) w 1))
       :n (assoc obj :y (inc cy))
       :s (assoc obj :y (- (+ cy ch) h 1))
-      :? obj)))
+      obj)))
 
 (defn pps->px [gamestate obj]
   (let [prev (get-in gamestate [:timing :prev])

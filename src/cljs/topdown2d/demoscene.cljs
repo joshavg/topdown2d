@@ -26,7 +26,7 @@
       }
     }))
 
-(defn update [gamestate scenedata]
+(defn update-scene [gamestate scenedata]
   (let [box (get-in scenedata [:data :box])
         bumper (get-in scenedata [:data :bumper])
         dir (input/dirinput)
@@ -42,7 +42,7 @@
           (assoc :color :red))
         (assoc mbox :color :black)))))
 
-(defn draw [gamestate scenedata]
+(defn draw-scene [gamestate scenedata]
   (let [{{:keys [bumper box]} :data} scenedata
         ctx (:2d gamestate)]
     (let [{:keys [x y w h]} bumper]
