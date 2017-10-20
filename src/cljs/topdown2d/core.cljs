@@ -10,15 +10,21 @@
   :2d (.getContext (.getElementById js/document "gamecanvas") "2d")
   :target-fps 30
   :timing {
+    ; msecs of previous frame
     :prev 0
+    ; msecs of current frame
     :now 0
+    ; fps resulting of prev and now
     :fps 0
+    ; difference between prev and now in seconds
     :elapsed 0
   }
+  ; width and height of the canvas
   :dimensions {
     :w 600
     :h 400
   }
+  ; currently active scene
   :scene :demo
   :scenes {
     :demo {
@@ -32,17 +38,23 @@
 
 (aset (:2d gamestate) "font" "10px monospace")
 
-(defn set-timing [state timingkey]
+(defn set-timing
+  "sets the current time at the given key"
+  [state timingkey]
   (assoc-in state
     [:timing timingkey]
     (.now js/performance)))
 
-(defn set-fps [state]
+(defn set-fps
+  "calculates the current fps using the elapsed time"
+  [state]
   (let [elapsed (get-in state [:timing :elapsed])
         fps (/ 1 elapsed)]
     (assoc-in state [:timing :fps] fps)))
 
-(defn set-elapsed-seconds [gamestate]
+(defn set-elapsed-seconds
+  "calculates and writes the elapsed seconds since the last frame"
+  [gamestate]
   (assoc-in gamestate
     [:timing :elapsed]
     (/
@@ -51,14 +63,18 @@
         (get-in gamestate [:timing :prev]))
       1000)))
 
-(defn update-scene [gamestate]
+(defn update-scene
+  "updates the current scene using its udpate function"
+  [gamestate]
   (let [scenekey (:scene gamestate)
         scenedata (get-in gamestate [:scenes scenekey])
         updatefunc (:update scenedata)
         newdata (updatefunc gamestate scenedata)]
     (update-in gamestate [:scenes scenekey] (fn [] newdata))))
 
-(defn update-step [gamestate]
+(defn update-step
+  "updates timing information and the current scene"
+  [gamestate]
   (-> gamestate
     (set-timing :now)
     (set-elapsed-seconds)
@@ -66,7 +82,9 @@
     (update-scene)
     (set-timing :prev)))
 
-(defn draw-step [gamestate]
+(defn draw-step
+  "clears the canvas, draws fps and invokes the scene draw function"
+  [gamestate]
   (.clearRect (:2d gamestate)
     0 0
     (get-in gamestate [:dimensions :w])
@@ -80,7 +98,11 @@
         drawfunc (:draw scene)]
     (drawfunc gamestate scene)))
 
-(defn mainloop [gamestate]
+(defn mainloop
+  "transforms the given gamestate by invoking a series of update
+  functions and draws it using the 2d context of the gamestate.
+  then, it calls itself again with a delay according to the target fps"
+  [gamestate]
   (let [newstate (update-step gamestate)]
     (draw-step newstate)
     (.setTimeout js/window
@@ -89,7 +111,9 @@
           #(mainloop newstate)))
       (/ 1000 (:target-fps gamestate)))))
 
-(defn init-scenes []
+(defn init-scenes
+  "initiates the scene data maps using their respective init functions"
+  []
   (assoc
     gamestate
     :scenes
