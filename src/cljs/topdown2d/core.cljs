@@ -7,7 +7,7 @@
 
 (def gamestate {
   :canvas (.getElementById js/document "gamecanvas")
-  :2d (.getContext (.getElementById js/document "gamecanvas") "2d")
+  :ctx (.getContext (.getElementById js/document "gamecanvas") "2d")
   :target-fps 30
   :timing {
     ; msecs of previous frame
@@ -36,7 +36,7 @@
   }
 })
 
-(aset (:2d gamestate) "font" "10px monospace")
+(aset (:ctx gamestate) "font" "10px monospace")
 
 (defn set-timing
   "sets the current time at the given key"
@@ -85,12 +85,12 @@
 (defn draw-step
   "clears the canvas, draws fps and invokes the scene draw function"
   [gamestate]
-  (.clearRect (:2d gamestate)
+  (.clearRect (:ctx gamestate)
     0 0
     (get-in gamestate [:dimensions :w])
     (get-in gamestate [:dimensions :h]))
   (.fillText
-    (:2d gamestate)
+    (:ctx gamestate)
     (int (get-in gamestate [:timing :fps]))
     0 10)
   (let [scenekey (:scene gamestate)
