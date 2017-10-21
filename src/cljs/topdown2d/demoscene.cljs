@@ -31,24 +31,31 @@
             :count 8
             :from 1
             :pos 0
+            :last-cycle 0
             ; seconds per cycle
             :spc 0.08
-            :last-cycle 0
           }
         }
       }
     }))
 
+(defn update-player [gamestate player dir]
+  (let [player-dir (get-in player [:sprite :d])
+        sprite-dir (if (= :? dir) player-dir dir)]
+    (as-> player p
+      (assoc-in p
+        [:sprite :d]
+        sprite-dir)
+      (if-not (= :? dir)
+        (sprites/proc-cycle gamestate p)
+        p))))
+
 (defn update-scene [gamestate scenedata]
   (let [player (get-in scenedata [:data :player])
-        dir (input/dirinput :?)
-        player (assoc-in player
-                 [:sprite :d]
-                 dir)
-        player (sprites/proc-cycle gamestate player)]
+        dir (input/dirinput)]
     (assoc-in scenedata
       [:data :player]
-      player)))
+      (update-player gamestate player dir))))
 
 (defn draw-scene [gamestate scenedata]
   (let [{{:keys [bumper player]} :data} scenedata

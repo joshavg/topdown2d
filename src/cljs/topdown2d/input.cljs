@@ -18,10 +18,10 @@
       #(assoc % (.-code event) false))
     false))
 
-(defn dirinput [defdir]
+(defn dirinput []
   (cond
     (keydown? :ArrowLeft) :w
     (keydown? :ArrowRight) :e
     (keydown? :ArrowUp) :n
     (keydown? :ArrowDown) :s
-    :else defdir))
+    :else :?))
