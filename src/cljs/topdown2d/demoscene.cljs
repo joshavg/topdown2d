@@ -1,25 +1,19 @@
 (ns topdown2d.demoscene
   (:require
-    [topdown2d.objects :as objects]
+    [topdown2d.collision :as collision]
     [topdown2d.input :as input]
     [topdown2d.sprites :as sprites]))
 
 (defn init [gamestate scenedata]
   (assoc scenedata
     :data {
-      :bumper {
-        :x 100
-        :y 80
-        :w 50
-        :h 50
-      }
       :player {
-        :x 0 :y 0
+        :x (- (/ (get-in gamestate [:dimensions :w]) 2) 32)
+        :y (- (/ (get-in gamestate [:dimensions :h]) 2) 32)
         :w 64 :h 64
-        :pps 150
         :d :?
         :sprite {
-          :image (.getElementById js/document "player")
+          :image (.getElementById js/document "demo-player")
           :size 64
           :d :s
           :rows {
@@ -28,14 +22,25 @@
             :? 2
           }
           :cycle {
-            :count 8
-            :from 1
             :pos 0
+            :from 1 :count 8
             :last-cycle 0
             ; seconds per cycle
             :spc 0.08
           }
         }
+      }
+      :viewport {
+        :image (.getElementById js/document "demo-background")
+        :keep-in {
+          :x 0 :y 0
+          :w 2239 :h 2235
+        }
+        :x 1 :y 1
+        :d :?
+        :pps 350
+        :w (get-in gamestate [:dimensions :w])
+        :h (get-in gamestate [:dimensions :h])
       }
     }))
 
@@ -50,17 +55,30 @@
         (sprites/proc-cycle gamestate p)
         p))))
 
+(defn update-viewport [gamestate viewport dir]
+  (collision/move-inside
+    (assoc viewport :d dir)
+    (:keep-in viewport)
+    (collision/pps->px gamestate viewport)))
+
 (defn update-scene [gamestate scenedata]
   (let [player (get-in scenedata [:data :player])
+        viewport (get-in scenedata [:data :viewport])
         dir (input/dirinput)]
-    (assoc-in scenedata
-      [:data :player]
-      (update-player gamestate player dir))))
+    (-> scenedata
+      (assoc-in [:data :player]
+        (update-player gamestate player dir))
+      (assoc-in [:data :viewport]
+        (update-viewport gamestate viewport dir)))))
 
 (defn draw-scene [gamestate scenedata]
-  (let [{{:keys [bumper player]} :data} scenedata
-        ctx (:ctx gamestate)]
-    (let [{:keys [x y w h]} bumper]
-      (.fillRect ctx
-        x y w h))
-    (sprites/draw gamestate player)))
+  (let [viewport (get-in scenedata [:data :viewport])
+        {:keys [x y w h background]} viewport]
+    (.drawImage
+      (:ctx gamestate)
+      (:image viewport)
+      x y w h
+      0 0 w h))
+  (sprites/draw
+    gamestate
+    (get-in scenedata [:data :player])))

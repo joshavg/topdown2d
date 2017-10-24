@@ -1,4 +1,4 @@
-(ns topdown2d.objects)
+(ns topdown2d.collision)
 
 (defn in? [obj container]
   (let [{:keys [x y w h]} obj
@@ -71,11 +71,3 @@
     (if (in? moved container)
       moved
       (bump-inside-container obj container))))
-
-(defn move-inside-gamestate [gamestate obj]
-  (let [pxs (pps->px gamestate obj)
-        container (assoc
-                    (:dimensions gamestate)
-                    :x 0
-                    :y 0)]
-    (move-inside obj container pxs)))

@@ -89,14 +89,14 @@
     0 0
     (get-in gamestate [:dimensions :w])
     (get-in gamestate [:dimensions :h]))
-  (.fillText
-    (:ctx gamestate)
-    (int (get-in gamestate [:timing :fps]))
-    0 10)
   (let [scenekey (:scene gamestate)
         scene (scenekey (:scenes gamestate))
         drawfunc (:draw scene)]
-    (drawfunc gamestate scene)))
+    (drawfunc gamestate scene))
+  (.fillText
+    (:ctx gamestate)
+    (int (get-in gamestate [:timing :fps]))
+    0 10))
 
 (defn mainloop
   "transforms the given gamestate by invoking a series of update
