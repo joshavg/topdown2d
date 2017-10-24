@@ -36,8 +36,6 @@
   }
 })
 
-(aset (:ctx gamestate) "font" "10px monospace")
-
 (defn set-timing
   "sets the current time at the given key"
   [state timingkey]
@@ -82,6 +80,21 @@
     (update-scene)
     (set-timing :prev)))
 
+(defn draw-fps
+  "draws the current fps"
+  [gamestate]
+  (let [ctx (:ctx gamestate)]
+    (aset ctx "fillStyle" "white")
+    (.fillRect
+      ctx
+      0 0 13 13)
+    (aset ctx "fillStyle" "black")
+    (aset ctx "font" "10px monospace")
+    (.fillText
+      (:ctx gamestate)
+      (int (get-in gamestate [:timing :fps]))
+      0 10)))
+
 (defn draw-step
   "clears the canvas, draws fps and invokes the scene draw function"
   [gamestate]
@@ -93,10 +106,7 @@
         scene (scenekey (:scenes gamestate))
         drawfunc (:draw scene)]
     (drawfunc gamestate scene))
-  (.fillText
-    (:ctx gamestate)
-    (int (get-in gamestate [:timing :fps]))
-    0 10))
+  (draw-fps gamestate))
 
 (defn mainloop
   "transforms the given gamestate by invoking a series of update
@@ -105,11 +115,18 @@
   [gamestate]
   (let [newstate (update-step gamestate)]
     (draw-step newstate)
-    (.setTimeout js/window
-      (fn []
-        (.requestAnimationFrame js/window
-          #(mainloop newstate)))
-      (/ 1000 (:target-fps gamestate)))))
+    ; calculate the duration of update-step and draw-step
+    ; substract that from the wait time to reach target-fps
+    ; more accurately
+    (let [now (get-in newstate [:timing :now])
+          duration (- (.now js/performance) now)]
+      (.setTimeout js/window
+        (fn []
+          (.requestAnimationFrame js/window
+            #(mainloop newstate)))
+        (/
+          (- 1000 duration)
+          (:target-fps gamestate))))))
 
 (defn init-scenes
   "initiates the scene data maps using their respective init functions"
