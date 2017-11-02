@@ -46,7 +46,7 @@
       :w (assoc obj :x (+ ox ow 1))
       :e (assoc obj :x (dec (- ox w)))
       :n (assoc obj :y (+ oy oh 1))
-      :s (assoc obj :y (dec (- oy h)))  
+      :s (assoc obj :y (dec (- oy h)))
       obj)))
 
 (defn bump-inside-container [obj container]
