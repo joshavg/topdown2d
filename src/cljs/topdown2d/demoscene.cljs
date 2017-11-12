@@ -48,6 +48,7 @@
   (let [player-dir (get-in player [:sprite :d])
         sprite-dir (if (= :? dir) player-dir dir)]
     (as-> player p
+      (assoc p :d dir)
       (assoc-in p
         [:sprite :d]
         sprite-dir)

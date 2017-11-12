@@ -3,25 +3,22 @@
 (defn proc-cycle [gamestate obj]
   (let [sprite (:sprite obj)
         sprite-cycle (:cycle sprite)
+        from (:from sprite-cycle)
         maxpos (:count sprite-cycle)
         {:keys [pos spc last-cycle]} sprite-cycle
-        elapsed (get-in gamestate [:timing :elapsed])]
+        elapsed (get-in gamestate [:timing :elapsed])
+        restart? (> (inc pos) maxpos)]
     ; new sprite frame?
     (if (> (+ last-cycle elapsed) spc)
       ; start cycle from new?
       ; reset last-cycle
-      (assoc-in
-        (if (> (inc pos) maxpos)
-          ; restart cycle
-          (assoc-in obj
-            [:sprite :cycle :pos]
-            (:from sprite-cycle))
-          ; run cycle
-          (update-in obj
-            [:sprite :cycle :pos]
-            inc))
-        [:sprite :cycle :last-cycle]
-        0)
+      (-> obj
+        (assoc-in
+          [:sprite :cycle :pos]
+          (if restart? from (inc pos)))
+        (assoc-in
+          [:sprite :cycle :last-cycle]
+          0))
       (update-in obj
         [:sprite :cycle :last-cycle]
         #(+ % elapsed)))))
