@@ -18,7 +18,7 @@
       #(assoc % (.-code event) false))
     false))
 
-(defn dirinput []
+(defn dir []
   (cond
     (keydown? :ArrowLeft) :w
     (keydown? :ArrowRight) :e

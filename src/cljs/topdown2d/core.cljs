@@ -8,7 +8,7 @@
 (def gamestate {
   :canvas (.getElementById js/document "gamecanvas")
   :ctx (.getContext (.getElementById js/document "gamecanvas") "2d")
-  :target-fps 30
+  :target-fps 40
   :timing {
     ; msecs of previous frame
     :prev 0
@@ -23,6 +23,9 @@
   :dimensions {
     :w 600
     :h 400
+  }
+  :input {
+    :dir :?
   }
   ; currently active scene
   :scene :demo
@@ -68,12 +71,13 @@
         scenedata (get-in gamestate [:scenes scenekey])
         updatefunc (:update scenedata)
         newdata (updatefunc gamestate scenedata)]
-    (update-in gamestate [:scenes scenekey] (fn [] newdata))))
+    (assoc-in gamestate [:scenes scenekey] newdata)))
 
 (defn update-step
   "updates timing information and the current scene"
   [gamestate]
   (-> gamestate
+    (assoc-in [:input :dir] (input/dir))
     (set-timing :now)
     (set-elapsed-seconds)
     (set-fps)

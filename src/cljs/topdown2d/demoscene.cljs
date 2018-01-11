@@ -11,11 +11,10 @@
         :x (- (/ (get-in gamestate [:dimensions :w]) 2) 32)
         :y (- (/ (get-in gamestate [:dimensions :h]) 2) 32)
         :w 64 :h 64
-        :d :?
+        :d :s
         :sprite {
           :image (.getElementById js/document "demo-player")
           :size 64
-          :d :s
           :rows {
             :w 1 :e 3
             :n 0 :s 2
@@ -45,16 +44,13 @@
     }))
 
 (defn update-player [gamestate player dir]
-  (let [player-dir (get-in player [:sprite :d])
-        sprite-dir (if (= :? dir) player-dir dir)]
+  (let [old-dir (:d player)
+        new-dir (if (= :? dir) old-dir dir)]
     (as-> player p
-      (assoc p :d dir)
-      (assoc-in p
-        [:sprite :d]
-        sprite-dir)
-      (if-not (= :? dir)
-        (sprites/proc-cycle gamestate p)
-        p))))
+      (assoc p :d new-dir)
+      (if (= :? dir)
+        (sprites/reset-cycle player)
+        (sprites/proc-cycle gamestate p)))))
 
 (defn update-viewport [gamestate viewport dir]
   (collision/move-inside
@@ -65,7 +61,7 @@
 (defn update-scene [gamestate scenedata]
   (let [player (get-in scenedata [:data :player])
         viewport (get-in scenedata [:data :viewport])
-        dir (input/dirinput)]
+        dir (get-in gamestate [:input :dir])]
     (-> scenedata
       (assoc-in [:data :player]
         (update-player gamestate player dir))
@@ -81,5 +77,5 @@
       x y w h
       0 0 w h))
   (sprites/draw
-    gamestate
+    (:ctx gamestate)
     (get-in scenedata [:data :player])))
