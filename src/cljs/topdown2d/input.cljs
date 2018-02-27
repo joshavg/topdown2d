@@ -5,18 +5,20 @@
 (defn keydown? [code]
   (get @keysdown (name code) false))
 
-(.addEventListener js/document
-  "keydown"
-  (fn [event]
-    (swap! keysdown #(assoc % (.-code event) true))
-    false))
+(.addEventListener
+ js/document
+ "keydown"
+ (fn [event]
+   (swap! keysdown #(assoc % (.-code event) true))
+   false))
 
-(.addEventListener js/document
-  "keyup"
-  (fn [event]
-    (swap! keysdown
-      #(assoc % (.-code event) false))
-    false))
+(.addEventListener
+ js/document
+ "keyup"
+ (fn [event]
+   (swap! keysdown
+          #(assoc % (.-code event) false))
+   false))
 
 (defn dir []
   (cond
