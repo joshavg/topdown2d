@@ -9,7 +9,7 @@
   {:canvas (.getElementById js/document "gamecanvas")
    :ctx (.getContext (.getElementById js/document "gamecanvas") "2d")
    :target-fps 40
-   :running true
+   :continue? true
    :timing {;; msecs of previous frame
             :prev 0
             ;; msecs of current frame
@@ -57,30 +57,32 @@
 (defn update-scene
   "updates the current scene using its udpate function"
   [gamestate]
-  (let [scenekey (:scene gamestate)
-        scenedata (get-in gamestate [:scenes scenekey])
-        updatefunc (:update scenedata)
-        newdata (updatefunc gamestate scenedata)]
-    (assoc-in gamestate [:scenes scenekey] newdata)))
+  (if-not (:continue? gamestate)
+    gamestate
+    (let [scenekey (:scene gamestate)
+          scenedata (get-in gamestate [:scenes scenekey])
+          updatefunc (:update scenedata)
+          newdata (updatefunc gamestate scenedata)]
+      (assoc-in gamestate [:scenes scenekey] newdata))))
 
 (defn continue-running?
   "checks if the gameloop should keep running, based on input"
   [gamestate]
   (update
    gamestate
-   :running
-   (fn [running]
+   :continue?
+   (fn [continue?]
      (cond
-       (and running
+       (and continue?
             (input/keydown? :Digit2)
             (input/keydown? :ControlLeft))
        false
-       (and (not running)
+       (and (not continue?)
             (input/keydown? :Digit3)
             (input/keydown? :ControlLeft))
        true
        :else
-       true))))
+       continue?))))
 
 (defn update-step
   "updates timing information and the current scene"
@@ -134,12 +136,10 @@
     ;; more accurately
     (let [now (get-in newstate [:timing :now])
           duration (- (.now js/performance) now)
-          continue? (:running newstate)
-          tfps (:target-fps gamestate)
-          timeout (if continue?
+          timeout (if (:continue? newstate)
                     (/
                      (- 1000 duration)
-                     (:target-fps gamestate))
+                     (:target-fps newstate))
                     5000)]
       (.setTimeout js/window
                    (fn []
