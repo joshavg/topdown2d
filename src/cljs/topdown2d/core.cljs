@@ -9,6 +9,7 @@
   {:canvas (.getElementById js/document "gamecanvas")
    :ctx (.getContext (.getElementById js/document "gamecanvas") "2d")
    :target-fps 40
+   :running true
    :timing {;; msecs of previous frame
             :prev 0
             ;; msecs of current frame
@@ -62,6 +63,25 @@
         newdata (updatefunc gamestate scenedata)]
     (assoc-in gamestate [:scenes scenekey] newdata)))
 
+(defn continue-running?
+  "checks if the gameloop should keep running, based on input"
+  [gamestate]
+  (update
+   gamestate
+   :running
+   (fn [running]
+     (cond
+       (and running
+            (input/keydown? :Digit2)
+            (input/keydown? :ControlLeft))
+       false
+       (and (not running)
+            (input/keydown? :Digit3)
+            (input/keydown? :ControlLeft))
+       true
+       :else
+       true))))
+
 (defn update-step
   "updates timing information and the current scene"
   [gamestate]
@@ -70,6 +90,7 @@
       (set-timing :now)
       (set-elapsed-seconds)
       (set-fps)
+      (continue-running?)
       (update-scene)
       (set-timing :prev)))
 
@@ -112,15 +133,20 @@
     ;; substract that from the wait time to reach target-fps
     ;; more accurately
     (let [now (get-in newstate [:timing :now])
-          duration (- (.now js/performance) now)]
+          duration (- (.now js/performance) now)
+          continue? (:running newstate)
+          tfps (:target-fps gamestate)
+          timeout (if continue?
+                    (/
+                     (- 1000 duration)
+                     (:target-fps gamestate))
+                    5000)]
       (.setTimeout js/window
                    (fn []
                      (.requestAnimationFrame
                       js/window
                       #(mainloop newstate)))
-                   (/
-                    (- 1000 duration)
-                    (:target-fps gamestate))))))
+                   timeout))))
 
 (defn init-scenes
   "initiates the scene data maps using their respective init functions"
