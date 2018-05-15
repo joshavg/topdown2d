@@ -26,8 +26,7 @@
    :scene :demo
    :scenes {:demo {:update demoscene/update-scene
                    :draw demoscene/draw-scene
-                   :init demoscene/init
-                   :data {}}}})
+                   :init demoscene/init}}})
 
 (defn set-timing
   "sets the current time at the given key"
@@ -60,10 +59,10 @@
   (if-not (:continue? gamestate)
     gamestate
     (let [scenekey (:scene gamestate)
-          scenedata (get-in gamestate [:scenes scenekey])
-          updatefunc (:update scenedata)
-          newdata (updatefunc gamestate scenedata)]
-      (assoc-in gamestate [:scenes scenekey] newdata))))
+          scenestate (get-in gamestate [:scenes scenekey])
+          updatefunc (:update scenestate)
+          newstate (updatefunc gamestate scenestate)]
+      (assoc-in gamestate [:scenes scenekey] newstate))))
 
 (defn continue-running?
   "checks if the gameloop should keep running, based on input"
@@ -119,8 +118,7 @@
               (get-in gamestate [:dimensions :w])
               (get-in gamestate [:dimensions :h]))
   (let [scenekey (:scene gamestate)
-        scene (scenekey (:scenes gamestate))
-        drawfunc (:draw scene)]
+        drawfunc (get-in gamestate [:scenes scenekey :draw])]
     (drawfunc gamestate scene))
   (draw-fps gamestate))
 
@@ -155,12 +153,10 @@
    gamestate
    :scenes
    (reduce
-    (fn [scenes [scenekey scenedata]]
-      (let [initfunc (:init scenedata)
-            newdata (initfunc gamestate scenedata)]
-        (assoc
-         scenes
-         scenekey newdata)))
+    (fn [scenes [scenekey scenestate]]
+      (let [initfunc (:init scenestate)
+            newstate (initfunc gamestate scenestate)]
+        (assoc scenes scenekey newstate)))
     {}
     (:scenes gamestate))))
 

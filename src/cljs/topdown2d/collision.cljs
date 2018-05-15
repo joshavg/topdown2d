@@ -4,39 +4,35 @@
   (let [{:keys [x y w h]} obj
         {cx :x cy :y cw :w ch :h} container]
     (and
-      (> x cx)
-      (> y cy)
-      (< (+ x w) (+ cx cw))
-      (< (+ y h) (+ cy ch)))))
+     (> x cx)
+     (> y cy)
+     (< (+ x w) (+ cx cw))
+     (< (+ y h) (+ cy ch)))))
 
 (defn collide? [obj obj2]
   (let [{:keys [x y w h]} obj
         {ox :x oy :y ow :w oh :h} obj2]
     (or
-      ; top left corner
-      (and (>= x ox) (>= y oy)
-        (<= x (+ ox ow)) (<= y (+ oy oh)))
-      ; top right corner
-      (and (>= (+ x h) ox) (>= y oy)
-        (<= (+ x h) (+ ox ow)) (<= y (+ oy oh)))
-      ; bottom left corner
-      (and (>= x ox) (>= (+ y h) oy)
-        (<= x (+ ox ow)) (<= (+ y h) (+ oy oh)))
-      ; bottom right corner
-      (and (>= (+ x w) ox) (>= (+ y h) oy)
-        (<= (+ x w) (+ ox ow)) (<= (+ y h) (+ oy oh))))))
+     ;; top left corner
+     (and (>= x ox) (>= y oy)
+          (<= x (+ ox ow)) (<= y (+ oy oh)))
+     ;; top right corner
+     (and (>= (+ x h) ox) (>= y oy)
+          (<= (+ x h) (+ ox ow)) (<= y (+ oy oh)))
+     ;; bottom left corner
+     (and (>= x ox) (>= (+ y h) oy)
+          (<= x (+ ox ow)) (<= (+ y h) (+ oy oh)))
+     ;; bottom right corner
+     (and (>= (+ x w) ox) (>= (+ y h) oy)
+          (<= (+ x w) (+ ox ow)) (<= (+ y h) (+ oy oh))))))
 
 (defn moved-object [obj pxs]
   (let [{:keys [x y d]} obj]
     (case d
-      :w (assoc obj
-           :x (- x pxs))
-      :e (assoc obj
-           :x (+ x pxs))
-      :n (assoc obj
-           :y (- y pxs))
-      :s (assoc obj
-           :y (+ y pxs))
+      :w (assoc obj :x (- x pxs))
+      :e (assoc obj :x (+ x pxs))
+      :n (assoc obj :y (- y pxs))
+      :s (assoc obj :y (+ y pxs))
       obj)))
 
 (defn bump-into [obj obj2]
